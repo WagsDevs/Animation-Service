@@ -1,0 +1,12 @@
+{
+  "name": "AnimationPackage",
+  "tree": {
+    "$className": "DataModel",
+    "ReplicatedStorage": {
+      "$className": "ReplicatedStorage",
+      "AnimationPackage": {
+        "$path": "src"
+      }
+    }
+  }
+}
