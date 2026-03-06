@@ -15,7 +15,7 @@
 	pool of rotating `RemoteEvent`s. On the client, tracks are loaded and played
 	directly on the `Animator`.
 
-	Resource cleanup is handled automatically through Trove. All playback state
+	Resource cleanup is handled automatically through Butler. All playback state
 	transitions fire a `PlaybackStateChanged` signal for external listeners.
 
 	:::caution
@@ -43,11 +43,11 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 -- // Requires
 
-local Packages  = script.Parent.Packages
-local Signal    = require(Packages.Signal)
-local Trove     = require(Packages.Trove)
-local Logger    = require(Packages.Logger)
-local TableUtil = require(Packages.TableUtil)
+local Packages    = script.Parent.Packages
+local Signal      = require(Packages.Signal)
+local Butler      = require(Packages.Butler)
+local Logger      = require(Packages.Logger)
+local TableUtil   = require(Packages.TableUtil)
 local TypedRemote = require(Packages.TypedRemote)
 
 -- // Types
@@ -106,7 +106,7 @@ type self = {
 	_uniqueId       : string,
 	_firedToClients : boolean,
 	_targetPlayers  : { Player }?,
-	_trove          : Trove.TroveType,
+	_butler         : Butler.Butler,
 	_params         : AnimationParams,
 	_animationId    : string | number,
 	_animator       : Animator,
@@ -545,7 +545,7 @@ end
 	Should be called when the animation is permanently no longer needed.
 
 	- **Server (not yet cancelled):** Delegates to `Cancel()` first to notify clients.
-	- **Client:** Immediately stops the track (0s fade) then runs Trove cleanup.
+	- **Client:** Immediately stops the track (0s fade) then runs Butler cleanup.
 
 	:::warning
 	After `Destroy()` is called the object's metatable is removed and its table is
@@ -562,7 +562,7 @@ function MT.__index:Destroy()
 		self._track:Stop(0)
 	end
 
-	self._trove:Destroy()
+	self._butler:Destroy()
 	setmetatable(self :: any, nil)
 	table.clear(self :: any)
 end
@@ -596,7 +596,7 @@ function Module:Create(
 
 	local self = setmetatable({} :: self, MT)
 
-	self._trove          = Trove.new()
+	self._butler         = Butler.new()
 	self._uniqueId       = HttpService:GenerateGUID(false)
 	self._params         = TableUtil.reconcile(animationParams or {}, DEFAULT_ANIMATION_PARAMS)
 	self._playbackState  = Enum.PlaybackState.Begin
@@ -606,7 +606,7 @@ function Module:Create(
 	self._rig            = resolveRigFromAnimator(animator)
 
 	self.Signals = {
-		PlaybackStateChanged = self._trove:Construct(Signal),
+		PlaybackStateChanged = self._butler:Construct(Signal),
 	} :: any
 
 	if RunService:IsClient() then
@@ -616,11 +616,11 @@ function Module:Create(
 		track.Priority = self._params.AnimationPriority or Enum.AnimationPriority.Action
 		track.Looped   = self._params.Looped or false
 		track:AdjustSpeed(self._params.AnimationSpeed or 1)
-		self._trove:Add(track)
+		self._butler:Add(track)
 
-		self.Signals.Played = self._trove:Construct(Signal)
-		self.Signals.Paused = self._trove:Construct(Signal)
-		self.Signals.Ended  = self._trove:Add(Signal.wrap(track.Ended))
+		self.Signals.Played = self._butler:Construct(Signal)
+		self.Signals.Paused = self._butler:Construct(Signal)
+		self.Signals.Ended  = self._butler:Add(Signal.wrap(track.Ended))
 	end
 
 	if self._params.AutoPlay then
