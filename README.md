@@ -11,7 +11,7 @@ src/
 ├── AnimationService.lua   ← Main module
 └── Packages/
     ├── Signal.lua         ← Custom signal implementation
-    ├── Trove.lua          ← Resource/lifecycle manager
+    ├── Butler.lua         ← Resource/lifecycle manager
     ├── TypedRemote.lua    ← Typed RemoteEvent/Function wrappers
     ├── TableUtil.lua      ← Table utility (reconcile)
     └── Logger.lua         ← Prefixed logging + assertions
@@ -126,7 +126,7 @@ All dependencies are self-contained in the `Packages/` folder — no external in
 
 | Package | Source |
 |---------|--------|
-| `Trove` | [Stephen Leitnick](https://github.com/Sleitnick/RbxUtil) |
+| `Butler` | Internal |
 | `Signal` | Custom high-performance implementation |
 | `TypedRemote` | Internal |
 | `TableUtil` | Adapted from [Stephen Leitnick](https://github.com/Sleitnick/RbxUtil) |
